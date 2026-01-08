@@ -9,7 +9,7 @@ import { PrismaService } from './prisma.service.js';
     // Configure JWT with the secret from .env
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'defaultSecret',
-      signOptions: { expiresIn: '1h' }, // Token expires in 1 hour
+      signOptions: { expiresIn: '1h' }, 
     }),
   ],
   controllers: [AppController],

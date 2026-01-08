@@ -1,29 +1,39 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 
 @Module({
   imports: [
-    // We register the "AUTH_SERVICE" client.
-    // This allows us to talk to the Auth microservice via Kafka.
     ClientsModule.register([
       {
         name: 'AUTH_SERVICE',
         transport: Transport.KAFKA,
         options: {
           client: {
-            clientId: 'api-gateway',
+            clientId: 'api-gateway-auth',
             brokers: ['localhost:9092'],
           },
           consumer: {
-            groupId: 'api-gateway-consumer', // ID for reading replies
+            groupId: 'auth-consumer',
+          },
+        },
+      },
+      {
+        name: 'CATALOG_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'api-gateway-catalog',
+            brokers: ['localhost:9092'],
+          },
+          consumer: {
+            groupId: 'catalog-consumer',
           },
         },
       },
     ]),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [],
 })
 export class AppModule {}

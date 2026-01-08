@@ -4,8 +4,8 @@ import { AppService } from './app.service.js';
 import { Prisma } from '@prisma/client';
 
 class LoginDto {
-  email: string;
-  password: string;
+  email!: string;
+  password!: string;
 }
 
 @Controller()

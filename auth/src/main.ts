@@ -11,10 +11,10 @@ async function bootstrap() {
       transport: Transport.KAFKA,
       options: {
         client: {
-          brokers: ['localhost:9092'], // Connect to the same Post Office
+          brokers: ['localhost:9092'],
         },
         consumer: {
-          groupId: 'auth-consumer', // Unique ID for this worker
+          groupId: 'auth-consumer',
         },
       },
     },
