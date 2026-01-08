@@ -1,4 +1,6 @@
-import { Controller, Post, Get, Body, Inject, OnModuleInit, UseGuards } from '@nestjs/common';
+import { 
+  Controller, Post, Get, Body, Inject, OnModuleInit, UseGuards, Request 
+} from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { AuthGuard } from './auth.guard';
 
@@ -6,19 +8,22 @@ import { AuthGuard } from './auth.guard';
 export class AppController implements OnModuleInit {
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
-    @Inject('CATALOG_SERVICE') private readonly catalogClient: ClientKafka, 
+    @Inject('CATALOG_SERVICE') private readonly catalogClient: ClientKafka,
+    @Inject('ORDERS_SERVICE') private readonly ordersClient: ClientKafka, // <--- Inject Orders
   ) {}
 
   async onModuleInit() {
-    // Auth Topics
+    // Subscribe to all topics
     this.authClient.subscribeToResponseOf('create_user');
     this.authClient.subscribeToResponseOf('login_user');
-    await this.authClient.connect();
-
-    // Catalog Topics
-    this.catalogClient.subscribeToResponseOf('create_product'); // Subscribe to Topics
+    this.catalogClient.subscribeToResponseOf('create_product');
     this.catalogClient.subscribeToResponseOf('get_products');
+    this.ordersClient.subscribeToResponseOf('create_order'); // <--- New
+    this.ordersClient.subscribeToResponseOf('get_orders');   // <--- New
+
+    await this.authClient.connect();
     await this.catalogClient.connect();
+    await this.ordersClient.connect();
   }
 
   @Post('register')
@@ -34,13 +39,31 @@ export class AppController implements OnModuleInit {
   @UseGuards(AuthGuard)
   @Post('products')
   createProduct(@Body() body: any) {
-    console.log('Gateway: Creating product...');
     return this.catalogClient.send('create_product', body);
   }
 
   @Get('products')
   getProducts() {
-    console.log('Gateway: Getting products...');
     return this.catalogClient.send('get_products', {});
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('orders')
+  createOrder(@Body() body: any, @Request() req: any) {
+    // take the User ID from the JWT Token (req.user)
+    const userId = req.user.sub; 
+    
+    return this.ordersClient.send('create_order', {
+      userId: userId,       
+      productId: body.productId,
+      quantity: body.quantity,
+      total: body.total
+    });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('orders')
+  getOrders() {
+    return this.ordersClient.send('get_orders', {});
   }
 }
