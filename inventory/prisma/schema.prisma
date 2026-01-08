@@ -1,0 +1,18 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Inventory {
+  id        Int      @id @default(autoincrement())
+  sku       String   @unique  // Unique code for the product (e.g., "LAPTOP-GAMING-001")
+  productId Int      @unique  // Link to Catalog Service ID
+  quantity  Int      // Available stock
+  reserved  Int      @default(0) // Stock reserved for pending orders
+  updatedAt DateTime @updatedAt
+}

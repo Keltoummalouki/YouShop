@@ -9,7 +9,8 @@ export class AppController implements OnModuleInit {
   constructor(
     @Inject('AUTH_SERVICE') private readonly authClient: ClientKafka,
     @Inject('CATALOG_SERVICE') private readonly catalogClient: ClientKafka,
-    @Inject('ORDERS_SERVICE') private readonly ordersClient: ClientKafka, // <--- Inject Orders
+    @Inject('ORDERS_SERVICE') private readonly ordersClient: ClientKafka, 
+    @Inject('INVENTORY_SERVICE') private readonly inventoryClient: ClientKafka,
   ) {}
 
   async onModuleInit() {
@@ -18,8 +19,15 @@ export class AppController implements OnModuleInit {
     this.authClient.subscribeToResponseOf('login_user');
     this.catalogClient.subscribeToResponseOf('create_product');
     this.catalogClient.subscribeToResponseOf('get_products');
-    this.ordersClient.subscribeToResponseOf('create_order'); // <--- New
-    this.ordersClient.subscribeToResponseOf('get_orders');   // <--- New
+    this.ordersClient.subscribeToResponseOf('create_order'); 
+    this.ordersClient.subscribeToResponseOf('get_orders');   
+    this.inventoryClient.subscribeToResponseOf('create_inventory');
+    this.inventoryClient.subscribeToResponseOf('get_inventory');
+
+    await this.authClient.connect();
+    await this.catalogClient.connect();
+    await this.ordersClient.connect();
+    await this.inventoryClient.connect();
 
     await this.authClient.connect();
     await this.catalogClient.connect();
@@ -65,5 +73,16 @@ export class AppController implements OnModuleInit {
   @Get('orders')
   getOrders() {
     return this.ordersClient.send('get_orders', {});
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('inventory')
+  addInventory(@Body() body: any) {
+    return this.inventoryClient.send('create_inventory', body);
+  }
+
+  @Get('inventory')
+  getInventory() {
+    return this.inventoryClient.send('get_inventory', {});
   }
 }

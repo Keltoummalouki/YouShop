@@ -40,6 +40,15 @@ import { AppController } from './app.controller';
           consumer: { groupId: 'orders-consumer' },
         },
       },
+
+      {
+        name: 'INVENTORY_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: { clientId: 'api-gateway-inventory', brokers: ['localhost:9092'] },
+          consumer: { groupId: 'inventory-consumer' },
+        },
+      },
     ]),
   ],
   controllers: [AppController],
