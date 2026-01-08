@@ -1,5 +1,6 @@
-import { Controller, Post, Get, Body, Inject, OnModuleInit } from '@nestjs/common';
+import { Controller, Post, Get, Body, Inject, OnModuleInit, UseGuards } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
+import { AuthGuard } from './auth.guard';
 
 @Controller()
 export class AppController implements OnModuleInit {
@@ -20,7 +21,6 @@ export class AppController implements OnModuleInit {
     await this.catalogClient.connect();
   }
 
-  // --- AUTH ROUTES ---
   @Post('register')
   createUser(@Body() body: any) {
     return this.authClient.send('create_user', body);
@@ -31,7 +31,7 @@ export class AppController implements OnModuleInit {
     return this.authClient.send('login_user', body);
   }
 
-  // --- CATALOG ROUTES (NEW) ---
+  @UseGuards(AuthGuard)
   @Post('products')
   createProduct(@Body() body: any) {
     console.log('Gateway: Creating product...');

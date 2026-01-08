@@ -1,9 +1,19 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { AppController } from './app.controller';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
+
+    // 1. Configure JWT
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET || 'SuperSecretKey_ChangeThisInProduction',
+      signOptions: { expiresIn: '1h' },
+    }),
+
+    // 2. Kafka Clients
     ClientsModule.register([
       {
         name: 'AUTH_SERVICE',
