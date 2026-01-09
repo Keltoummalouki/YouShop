@@ -1,4 +1,3 @@
-
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AppService } from './app.service.js';
@@ -8,19 +7,24 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @MessagePattern('create_product')
-  async handleCreateProduct(@Payload() data: any) {
-    console.log('Creating product:', data.name);
-
-    return this.appService.createProduct({
-      name: data.name,
-      description: data.description,
-      price: Number(data.price),
-      stock: Number(data.stock),
-    });
+  handleCreateProduct(@Payload() data: any) {
+    return this.appService.createProduct(data);
   }
 
+  // Mise à jour : Accepte les filtres
   @MessagePattern('get_products')
-  async handleGetProducts() {
-    return this.appService.getProducts();
+  handleGetProducts(@Payload() data: any) {
+    return this.appService.getProducts(data || {});
+  }
+
+  // Get One
+  @MessagePattern('get_product_by_id')
+  handleGetProductById(@Payload() data: { id: number }) {
+    return this.appService.getProductById(data.id);
+  }
+
+  @MessagePattern('update_product')
+  handleUpdateProduct(@Payload() data: any) {
+    return this.appService.updateProduct(data);
   }
 }

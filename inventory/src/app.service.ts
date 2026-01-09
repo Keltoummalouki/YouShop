@@ -42,4 +42,21 @@ export class AppService {
       console.log(`Product ${productId} not found in Inventory!`);
     }
   }
+
+  async restock(data: { sku: string; quantity: number }) {
+    // 1. On cherche le produit
+    const item = await this.prisma.inventory.findUnique({
+      where: { sku: data.sku },
+    });
+
+    if (!item) throw new Error('Produit introuvable');
+
+    // 2. On AJOUTE la quantité (Existant + Livraison)
+    return this.prisma.inventory.update({
+      where: { id: item.id },
+      data: {
+        quantity: item.quantity + data.quantity, 
+      },
+    });
+  }
 }

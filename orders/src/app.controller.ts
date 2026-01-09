@@ -12,8 +12,9 @@ export class AppController {
     return this.appService.createOrder(data);
   }
 
-  @MessagePattern('get_orders')
-  handleGetOrders() {
-    return this.appService.getOrders();
+@MessagePattern('get_orders')
+  handleGetOrders(@Payload() data: any) {
+    // Si un userId est fourni, on filtre. Sinon (Admin), on renvoie tout.
+    return this.appService.getOrders(data.userId);
   }
 }

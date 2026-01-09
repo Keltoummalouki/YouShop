@@ -15,9 +15,11 @@ datasource db {
 }
 
 model Product {
-  id          Int     @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   name        String
-  description String?
+  description String
   price       Float
-  stock       Int
+  category    String   // filtrage
+  stock       Int      @default(0) // On garde ça pour l'affichage simple
+  createdAt   DateTime @default(now())
 }

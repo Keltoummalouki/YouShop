@@ -18,7 +18,14 @@ export class AppController {
 
   @EventPattern('order_created')
   handleOrderCreated(@Payload() data: any) {
-    console.log('⚡ Event Received: order_created', data);
+    console.log('Event Received: order_created', data);
     return this.appService.reduceStock(data);
   }
+
+  @MessagePattern('restock_inventory')
+  handleRestock(@Payload() data: any) {
+    console.log(`Réapprovisionnement SKU ${data.sku} : +${data.quantity}`);
+    return this.appService.restock(data);
+  }
+
 }

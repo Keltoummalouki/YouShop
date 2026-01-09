@@ -34,7 +34,17 @@ export class AppService {
     return newOrder;
   }
 
-  async getOrders() {
-    return this.prisma.order.findMany();
+  async getOrders(userId?: number) {
+    if (userId) {
+      // Filtre pour un client spécifique
+      return this.prisma.order.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' }
+      });
+    }
+    // Pas de filtre (pour l'admin plus tard)
+    return this.prisma.order.findMany({
+        orderBy: { createdAt: 'desc' }
+    });
   }
 }
