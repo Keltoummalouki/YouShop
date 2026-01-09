@@ -23,6 +23,7 @@ export class AppController implements OnModuleInit {
     @Inject('CATALOG_SERVICE') private readonly catalogClient: ClientKafka,
     @Inject('ORDERS_SERVICE') private readonly ordersClient: ClientKafka, 
     @Inject('INVENTORY_SERVICE') private readonly inventoryClient: ClientKafka,
+    @Inject('PAYMENT_SERVICE') private readonly paymentClient: ClientKafka, 
   ) {}
 
   async onModuleInit() {
@@ -47,11 +48,14 @@ export class AppController implements OnModuleInit {
     this.inventoryClient.subscribeToResponseOf('get_inventory');
     this.inventoryClient.subscribeToResponseOf('restock_inventory'); // Pour l'Admin
 
+    this.paymentClient.subscribeToResponseOf('create_payment_session');
+
     // --- 2. Connexion aux Microservices ---
     await this.authClient.connect();
     await this.catalogClient.connect();
     await this.ordersClient.connect();
     await this.inventoryClient.connect();
+    await this.paymentClient.connect();
   }
 
   // ============================
@@ -144,7 +148,7 @@ export class AppController implements OnModuleInit {
     const { productId, quantity } = body;
     const userId = req.user.sub;
 
-    console.log(`🛒 Traitement commande : User ${userId}, Produit ${productId}, Qté ${quantity}`);
+    console.log(`Traitement commande : User ${userId}, Produit ${productId}, Qté ${quantity}`);
 
     try {
       // 1. Appel Synchrone au Catalogue pour vérifier le produit et le prix
@@ -163,7 +167,7 @@ export class AppController implements OnModuleInit {
 
       // 2. Calcul du Total Sécurisé (Prix officiel * Quantité)
       const total = product.price * quantity;
-      console.log(`💰 Prix vérifié : ${product.price} x ${quantity} = ${total}`);
+      console.log(`Prix vérifié : ${product.price} x ${quantity} = ${total}`);
 
       // 3. Envoi au service Orders
       return this.ordersClient.send('create_order', {
@@ -198,5 +202,36 @@ export class AppController implements OnModuleInit {
   @Get('inventory')
   getInventory() {
     return this.inventoryClient.send('get_inventory', {});
+  }
+  
+  // ROUTE DE PAIEMENT
+  @UseGuards(AuthGuard)
+  @Post('orders/:id/pay')
+  async payOrder(@Param('id') orderId: string, @Request() req: any) {
+    console.log(`Tentative de paiement pour la commande #${orderId}`);
+
+    try {
+      // 1. Récupérer les infos de la commande (Service Orders)
+      // Note: Il faudra peut-être ajouter une méthode 'get_order_by_id' dans Orders,
+      // pour l'instant on va simuler en supposant qu'on a les infos, ou on réutilise getOrders
+      // Pour simplifier ce test, on va juste envoyer les données brutes au service paiement.
+      
+      // Idéalement : 
+      // const order = await firstValueFrom(this.ordersClient.send('get_order_by_id', { id: parseInt(orderId) }));
+      
+      // Pour ce test rapide, on va tricher un peu et recalculer le contexte ou envoyer des données fixes
+      // Dans un vrai cas, tu ferais un appel chainé.
+      
+      // On va demander au Payment Service de générer le lien
+      // On envoie un nom de produit générique pour tester
+      return this.paymentClient.send('create_payment_session', {
+        orderId: parseInt(orderId),
+        amount: 2400, // Tu peux dynamiser ça plus tard
+        productName: 'Commande YouShop #' + orderId
+      });
+
+    } catch (error) {
+      throw new HttpException('Erreur paiement', HttpStatus.BAD_REQUEST);
+    }
   }
 }

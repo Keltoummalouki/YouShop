@@ -49,6 +49,20 @@ import { AppController } from './app.controller';
           consumer: { groupId: 'inventory-consumer' },
         },
       },
+
+      {
+        name: 'PAYMENT_SERVICE',
+        transport: Transport.KAFKA,
+        options: {
+          client: { 
+            clientId: 'gateway-payment-client-FINAL', 
+            brokers: ['localhost:9092'] 
+          },
+          consumer: { 
+            groupId: 'gateway-payment-consumer-FINAL' 
+          }, 
+        },
+      },
     ]),
   ],
   controllers: [AppController],
